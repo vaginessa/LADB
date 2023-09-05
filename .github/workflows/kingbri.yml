@@ -1,0 +1,32 @@
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [actions]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: List directory
+        run: |
+          pwd
+          ls -a
+      - name: Build app
+        uses: sparkfabrik/android-build-action@v1.0.0
+        with:
+          project-path: /home/runner/work/LADB/LADB
+          output-path: LADB.apk
+      - name: Get commit SHA
+        id: commitinfo
+        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+      - name: Rename APK
+        run: |
+          mv LADB.apk LADB-kingbri-${{ steps.commitinfo.outputs.sha_short }}.apk
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: LADB-kingbri-${{ steps.commitinfo.outputs.sha_short }}.apk
+          path: LADB-kingbri-${{ steps.commitinfo.outputs.sha_short }}.apk
+          if-no-files-found: error
